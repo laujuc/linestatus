@@ -1,0 +1,20 @@
+# Build artifacts
+linestatus*
+!linestatus-static-volume
+!linestatus-volume
+!linestatus-gtk
+!linestatus-wayland
+
+# Zig cache
+.zig-cache/
+
+# Object files
+*.o
+*.so
+
+# Editor files
+*.swp
+*.swo
+
+# Echo meter submodule
+echo-meter/

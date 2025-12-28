@@ -1,0 +1,33 @@
+#!/bin/bash
+# Simple script to send status updates to linestatus socket
+
+SOCKET="$XDG_RUNTIME_DIR/linestatus.sock"
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 <value> [type]"
+    echo "Examples:"
+    echo "  $0 60              # Send volume"
+    echo "  $0 80 brightness    # Send brightness"
+    exit 1
+fi
+
+# Check if value is valid
+if ! [[ "$1" =~ ^[0-9]+$ ]] || [ "$1" -lt 0 ] || [ "$1" -gt 100 ]; then
+    echo "Error: Value must be between 0 and 100"
+    exit 1
+fi
+
+# Send status to socket
+if [ -e "$SOCKET" ]; then
+    if [ "$2" = "brightness" ]; then
+        echo "Sending brightness $1 to $SOCKET"
+        echo "brightness:$1" | socat - UNIX-CONNECT:"$SOCKET"
+    else
+        echo "Sending volume $1 to $SOCKET"
+        echo "volume:$1" | socat - UNIX-CONNECT:"$SOCKET"
+    fi
+else
+    echo "Error: Socket $SOCKET not found"
+    echo "Is linestatus running?"
+    exit 1
+fi

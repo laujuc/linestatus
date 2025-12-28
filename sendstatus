@@ -1,0 +1,65 @@
+#!/bin/bash
+# Simple script to send status updates to linestatus socket
+
+# Parse arguments
+TYPE="status"
+VALUE=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --type)
+            if [ -n "$2" ] && [[ ! $2 == --* ]]; then
+                TYPE="$2"
+                shift 2
+            else
+                echo "Error: --type requires a type name"
+                echo "Usage: $0 [--type TYPE] <value>"
+                exit 1
+            fi
+            ;;
+        --help|-h)
+            echo "Usage: $0 [OPTIONS] <value>"
+            echo "Send status updates to linestatus socket"
+            echo ""
+            echo "Options:"
+            echo "  --type TYPE    Socket type (default: status)"
+            echo "  --help, -h     Show this help message"
+            echo ""
+            echo "Examples:"
+            echo "  $0 60                          # Send to default socket"
+            echo "  $0 --type volume 60            # Send to volume socket"
+            echo "  $0 --type brightness 80       # Send to brightness socket"
+            exit 0
+            ;;
+        *)
+            if [ -z "$VALUE" ]; then
+                VALUE="$1"
+                shift
+            else
+                echo "Error: Unexpected argument '$1'"
+                echo "Usage: $0 [--type TYPE] <value>"
+                exit 1
+            fi
+            ;;
+    esac
+done
+
+if [ -z "$VALUE" ]; then
+    echo "Usage: $0 [--type TYPE] <value>"
+    echo "Example: $0 60"
+    echo "         $0 --type volume 60"
+    exit 1
+fi
+
+# Get socket path
+SOCKET="$XDG_RUNTIME_DIR/linestatus-$TYPE.sock"
+
+# Send value to socket
+if [ -e "$SOCKET" ]; then
+    echo "Sending value $VALUE to $SOCKET (type: $TYPE)"
+    echo "$VALUE" | socat - UNIX-CONNECT:"$SOCKET"
+else
+    echo "Error: Socket $SOCKET not found"
+    echo "Is linestatus running with --type $TYPE?"
+    exit 1
+fi
