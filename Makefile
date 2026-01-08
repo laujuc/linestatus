@@ -1,54 +1,46 @@
+# LineStatus Makefile
+# Build system for the LineStatus GTK application
+
 CC := zig cc
 CFLAGS := -Wall -Wextra -std=c11
-<<<<<<< HEAD
-LDFLAGS := `pkg-config --cflags --libs gtk4 gtk4-layer-shell-0`
-TARGET := linestatus
-=======
-LDFLAGS_WAYLAND := -lwayland-client
-LDFLAGS_GTK := `pkg-config --cflags --libs gtk4 gtk4-layer-shell-0`
-LDFLAGS_VOLUME := `pkg-config --cflags --libs gtk4 gtk4-layer-shell-0 libpipewire-0.3`
-TARGET_WAYLAND := linestatus-wayland
-TARGET_GTK := linestatus-gtk
-TARGET_VOLUME_SIMPLE := linestatus-volume
-TARGET_STATIC_VOLUME := linestatus
->>>>>>> dev/fix-click-through
 
+# Main build configuration
+LDFLAGS := `pkg-config --cflags --libs gtk4 gtk4-layer-shell-0`
 SRC_DIR := src
-SRC := $(SRC_DIR)/main.c
+
+# Target definitions
+TARGET_MAIN := linestatus
+TARGET_STATIC := linestatus-static
+
+# Source files
+SRC_MAIN := $(SRC_DIR)/main.c
+SRC_STATIC := $(SRC_DIR)/main_static_volume.c
 
 .PHONY: all clean run install
 
-<<<<<<< HEAD
-all: $(TARGET)
-=======
-all: $(TARGET_STATIC_VOLUME)
->>>>>>> dev/fix-click-through
+# Default target builds the main application
+all: $(TARGET_MAIN)
 
-$(TARGET): $(SRC) src/style.css
+# Main application target (interactive volume control)
+$(TARGET_MAIN): $(SRC_MAIN) src/style.css
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
+# Static volume application target
+$(TARGET_STATIC): $(SRC_STATIC) src/style.css
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+# Clean both targets
 clean:
-<<<<<<< HEAD
-	rm -f $(TARGET)
+	rm -f $(TARGET_MAIN) $(TARGET_STATIC)
 
-run: $(TARGET)
-	./$(TARGET)
-=======
-	rm -f $(TARGET_STATIC_VOLUME)
+# Run targets
+run: $(TARGET_MAIN)
+	./$(TARGET_MAIN)
 
-run-wayland: $(TARGET_WAYLAND)
-	./$(TARGET_WAYLAND)
+run-static: $(TARGET_STATIC)
+	./$(TARGET_STATIC)
 
-run-gtk: $(TARGET_GTK)
-	./$(TARGET_GTK)
-
-run-volume: $(TARGET_VOLUME_SIMPLE)
-	./$(TARGET_VOLUME_SIMPLE)
-
-run:
-	./$(TARGET_STATIC_VOLUME) &
->>>>>>> dev/fix-click-through
-
+# Install the main application
 install:
 	mkdir -p $(DESTDIR)/usr/local/bin
-	install -m 755 $(TARGET) $(DESTDIR)/usr/local/bin/linestatus
+	install -m 755 $(TARGET_MAIN) $(DESTDIR)/usr/local/bin/linestatus
